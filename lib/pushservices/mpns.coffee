@@ -6,7 +6,7 @@ class PushServiceMPNS
         if PushServiceMPNS::tokenFormat.test(token)
             return token
 
-    constructor: (@conf, @logger, tokenResolver) ->
+    constructor: (@conf, @logger, tokenResolver, @failCallback) ->
         @conf.type ?= "toast"
         if @conf.type is "tile" and not @conf.tileMapping
             throw new Error("Invalid MPNS configuration: missing `tileMapping` for `tile` type")
@@ -52,6 +52,7 @@ class PushServiceMPNS
             if sender
                 sender info.token, note, (error, result) =>
                     if error
+                        @failCallback 'mpns'
                         if error.shouldDeleteChannel
                             @logger?.warn("MPNS Automatic unregistration for subscriber #{subscriber.id}")
                             subscriber.delete()
