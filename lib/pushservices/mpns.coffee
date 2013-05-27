@@ -52,7 +52,7 @@ class PushServiceMPNS
             if sender
                 sender info.token, note, (error, result) =>
                     if error
-                        @failCallback 'mpns'
+                        @failCallback()
                         if error.shouldDeleteChannel
                             @logger?.warn("MPNS Automatic unregistration for subscriber #{subscriber.id}")
                             subscriber.delete()
