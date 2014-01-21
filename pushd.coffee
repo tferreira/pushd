@@ -2,6 +2,7 @@ express = require 'express'
 dgram = require 'dgram'
 zlib = require 'zlib'
 url = require 'url'
+optimist = require 'optimist'
 Netmask = require('netmask').Netmask
 settings = require './settings'
 redis = require('redis').createClient(settings.server.redis_socket or settings.server.redis_port, settings.server.redis_host)
@@ -141,7 +142,11 @@ require('./lib/api').setupRestApi(app, createSubscriber, getEventFromId, authori
 if eventSourceEnabled
     require('./lib/eventsource').setup(app, authorize, eventPublisher)
 
-port = settings?.server?.tcp_port ? 80
+# Check command line args and settings file for tcp_port
+if optimist.argv.tcp_port?
+    port = optimist.argv.tcp_port
+else
+    port = settings?.server?.tcp_port ? 80
 app.listen port
 logger.info "Listening on tcp port #{port}"
 
@@ -176,7 +181,12 @@ udpApi.on 'message', (msg, rinfo) ->
                     return
             logger.info("UDP/#{method} #{req.pathname} #{status}") if settings.server?.access_log
 
-port = settings?.server?.udp_port
+# Check command line args and settings file for udp_port
+if optimist.argv.udp_port?
+    port = optimist.argv.udp_port
+else
+    port = settings?.server?.udp_port ? 80
+
 if port?
     udpApi.bind port
     logger.info "Listening on udp port #{port}"
