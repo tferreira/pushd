@@ -526,21 +526,19 @@ Statistics on the number of subscribers and published messages are available by 
     <     "gcm": 1,
     <     "apns": 2
     <   },
-    <   "totalPublished": 14,
+    <   "totalPublished": 11,
     <   "published": {
     <     "apns": {
-    <       "2013-04": 1,
-    <       "2013-05": 4
+    <       "today": 4
     <     },
     <     "gcm": {
-    <       "2013-04": 2,
-    <       "2013-05": 7
+    <       "today": 7
     <     }
     <   },
     <   "totalErrors": 3,
     <   "errors": {
     <     "gcm": {
-    <       "2013-05": 3
+    <       "today": 3
     <     }
     <   },
     <   "totalEvents": 2
@@ -551,9 +549,9 @@ Statistics on the number of subscribers and published messages are available by 
 - `totalSubscribers`: The number of subscribers currently registered
 - `subscribers`: The number of registered subscribers broken down by the used protocol
 - `totalPublished`: The total number of messages pushed to subscribers. If a message is pushed to an event that has multiple subscribers, each subscriber is counted separately here.
-- `published`: The number of pushed messages broken down by the receiver's protocol and the month, when the message was published
+- `published`: The number of pushed messages broken down by the receiver's protocol on today, when the message was published
 - `totalErrors`: The total number of failed push attempts
-- `errors`: The number of failed pushes broken down by the receiver's protocol and the month, when the push attempt was made
+- `errors`: The number of failed pushes broken down by the receiver's protocol on today, when the push attempt was made
 - `totalEvents`: The number of currently registered events
 
 Logging
