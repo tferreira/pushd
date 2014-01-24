@@ -1,20 +1,20 @@
 Subscriber = require('./subscriber').Subscriber
 Event = require('./event').Event
- 
+
 class Statistics
     constructor: (@redis) ->
 
     collectStatistics: (cb) ->
-        @getPublishedCounts (totalPublished, publishedOSMonthly, totalErrors, errorsOSMonthly) =>
+        @getPublishedCounts (totalPublished, publishedOSDaily, totalErrors, errorsOSDaily) =>
             Subscriber::subscriberCount @redis, (numsubscribers, subscribersPerProto) =>
                 Event::eventCount @redis, (numevents) =>
                     stats =
                         totalSubscribers: numsubscribers
                         subscribers: subscribersPerProto
                         totalPublished: totalPublished
-                        published: publishedOSMonthly
+                        published: publishedOSDaily
                         totalErrors: totalErrors
-                        errors: errorsOSMonthly
+                        errors: errorsOSDaily
                         totalEvents: numevents
                     cb(stats) if cb
 
@@ -31,35 +31,40 @@ class Statistics
     getPublishedCounts: (cb) ->
         @redis.keys @allPublishedKeyname(), (err, publishedKeys) =>
             @redis.keys @allErrorsKeyname(), (err, errorKeys) =>
-                @getOSMonthlyCounts publishedKeys, (totalPublished, publishedCounts) =>
-                    @getOSMonthlyCounts errorKeys, (totalErrors, errorCounts) =>
+                @getOSDailyCounts publishedKeys, (totalPublished, publishedCounts) =>
+                    @getOSDailyCounts errorKeys, (totalErrors, errorCounts) =>
                         cb(totalPublished, publishedCounts, totalErrors, errorCounts) if cb
 
-    getOSMonthlyCounts: (keys, cb) ->
+    getOSDailyCounts: (keys, cb) ->
         if keys.length == 0
             cb(0, {}) if cb
             return
-        
+
         @redis.mget keys, (err, values) =>
-            countsOSMonthly = {}
+            countsOSDaily = {}
             total = 0
             keys.forEach (key, i) =>
-                monthAndProto = key.split(':').slice(-2)
-                month = monthAndProto[0]
-                proto = monthAndProto[1]
-                if not countsOSMonthly[proto]?
-                    countsOSMonthly[proto] = {}
+                dateAndProto = key.split(':').slice(-2)
+                day = dateAndProto[0]
+                todayKeyName = @publishedKeynamePostfix(proto).split(':').slice(-2)
+                todayDate = todayKeyName[0]
+                proto = dateAndProto[1]
+                if not countsOSDaily[proto]?
+                    countsOSDaily[proto] = {}
                 x = parseInt values[i], 10
-                countsOSMonthly[proto][month] = x
+                if day == todayDate
+                    countsOSDaily[proto]['today'] = x
+                else
+                    countsOSDaily[proto]['today'] = 0
                 total += x
-                
-            cb(total, countsOSMonthly) if cb
-            
+
+            cb(total, countsOSDaily) if cb
+
     clearPublishedCounts: (cb) ->
         @redis.keys @allPublishedKeyname(), (err, statsKeys) =>
             if statsKeys?
                 @redis.del statsKeys
-                
+
             @redis.keys @allErrorsKeyname(), (err, errorKeys) =>
                 if errorKeys?
                     @redis.del errorKeys
@@ -71,7 +76,7 @@ class Statistics
 
     allPublishedKeyname: ->
         return 'statistics:published:*'
-        
+
     errorKeyname: (proto) ->
         return 'statistics:pusherrors:' + @publishedKeynamePostfix(proto)
 
@@ -82,8 +87,11 @@ class Statistics
         today = new Date
         year = today.getUTCFullYear().toString()
         month = (today.getUTCMonth() + 1).toString()
+        day = (today.getUTCDate() + 1).toString()
         if month.length < 2
             month = '0' + month
-        return "#{year}-#{month}:#{proto}"
+        if day.length < 2
+            day = '0' + day
+        return "#{year}-#{month}-#{day}:#{proto}"
 
 exports.Statistics = Statistics
