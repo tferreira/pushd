@@ -12,11 +12,30 @@ Event = require('./lib/event').Event
 PushServices = require('./lib/pushservices').PushServices
 Payload = require('./lib/payload').Payload
 Statistics = require('./lib/statistics').Statistics
-logger = require 'winston'
+winston = require('winston')
+Sentry = require('winston-sentry')
 
+# Pushd console loglevel (winston default is 'info')
 if settings.loglevel?
-    logger.remove(logger.transports.Console);
-    logger.add(logger.transports.Console, { level: settings.loglevel });
+    consoleLogLevel = settings.loglevel
+else
+    consoleLogLevel = 'info'
+
+# Initialize Winston logger with console transport
+logger = new winston.Logger({
+    transports: [
+        new winston.transports.Console({level: consoleLogLevel})
+    ]
+});
+
+# Optional Winstron Sentry transport
+if settings.sentry?.dsn? and settings.sentry?.level?
+    logger.add(Sentry,  {
+                            level: settings.sentry.level,
+                            dsn: settings.sentry.dsn
+                        }
+    )
+
 
 if settings.server?.redis_auth?
     redis.auth(settings.server.redis_auth)

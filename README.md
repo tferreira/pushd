@@ -569,6 +569,21 @@ Possible levels:
 - `verbose`: log event and subscriber creation and deletion
 - `silly`: log submitted message content
 
+You can also send logs to a Sentry logging platform by adding your project DSN and log level in settings.coffee.
+
+    exports.sentry =
+        level: 'warn',
+        dsn: '{{ YOUR SENTRY DSN }}'
+
+Winston logging levels are mapped to the default sentry levels like this:
+
+    silly: 'debug',
+    verbose: 'debug',
+    info: 'info',
+    debug: 'debug',
+    warn: 'warning',
+    error: 'error',
+
 Testing
 -------
 
