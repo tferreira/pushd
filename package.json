@@ -41,7 +41,8 @@
         "redis": "~0.8.2",
         "netmask": "~0.0.2",
         "winston": "~0.6.2",
-        "optimist": "~0.6.0"
+        "optimist": "~0.6.0",
+        "winston-sentry": "~0.0.5"
     },
     "devDependencies":
     {
